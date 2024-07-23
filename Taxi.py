@@ -6,6 +6,7 @@ import pygame
 
 # Khởi tạo môi trường taxi-v3 từ OpenAI Gym
 env = gym.make("Taxi-v3")
+env.render()
 
 state_space = env.observation_space.n
 action_space = env.action_space.n
@@ -66,22 +67,44 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 
+# Thêm màu nền
+BACKGROUND_COLOR = (0, 128, 0)  # Màu xanh lá cây
+
 FONT = pygame.font.SysFont('Arial', 25)
 
 screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
 pygame.display.set_caption('Taxi-v3')
 
+# Tải icon taxi
+taxi_icon = pygame.image.load('taxi_icon.png')  # Đảm bảo rằng bạn có file 'taxi_icon.png' trong cùng thư mục
+
+# Các bức tường trong môi trường Taxi-v3
+walls = [
+    ((1, 0), (2, 0)),
+    ((1, 1), (2, 1)),
+    ((0, 3), (1, 3)),
+    ((0, 4), (1, 4)),
+    ((2, 3), (3, 3)),
+    ((2, 4), (3, 4))
+]
 
 def draw_grid(state, steps, reward, episode):
-    screen.fill(WHITE)
-    for x in range(0, WINDOW_SIZE, GRID_SIZE):
-        for y in range(0, WINDOW_SIZE, GRID_SIZE):
-            rect = pygame.Rect(x, y, GRID_SIZE, GRID_SIZE)
-            pygame.draw.rect(screen, BLACK, rect, 1)
+    screen.fill(BACKGROUND_COLOR)
+
+    # Vẽ các bức tường
+    for wall in walls:
+        (x1, y1), (x2, y2) = wall
+        if x1 == x2:  # Vertical wall
+            start_pos = (x1 * GRID_SIZE, min(y1, y2) * GRID_SIZE + GRID_SIZE)
+            end_pos = (x1 * GRID_SIZE + GRID_SIZE, min(y1, y2) * GRID_SIZE + GRID_SIZE )
+        else:  # Horizontal wall
+            start_pos = (min(x1, x2) * GRID_SIZE + GRID_SIZE , y1 * GRID_SIZE)
+            end_pos = (min(x1, x2) * GRID_SIZE + GRID_SIZE, y1 * GRID_SIZE + GRID_SIZE)
+        pygame.draw.line(screen, BLACK, start_pos, end_pos, 5)
 
     taxi_row, taxi_col, pass_loc, dest_loc = env.decode(state)
     taxi_rect = pygame.Rect(taxi_col * GRID_SIZE, taxi_row * GRID_SIZE, GRID_SIZE, GRID_SIZE)
-    pygame.draw.rect(screen, BLUE, taxi_rect)
+    screen.blit(pygame.transform.scale(taxi_icon, (GRID_SIZE, GRID_SIZE)), taxi_rect)
 
     loc_colors = [RED, GREEN, YELLOW, BLACK]
     for i, loc in enumerate(env.locs):
@@ -95,7 +118,7 @@ def draw_grid(state, steps, reward, episode):
     else:
         pygame.draw.circle(screen, loc_colors[dest_loc], taxi_rect.center, GRID_SIZE // 4)
 
-    reward_text = FONT.render(f'Episode: {episode} Step: {steps} Reward: {reward}', True, BLACK)
+    reward_text = FONT.render(f'Episode: {episode} Step: {steps} Reward: {reward}', True, WHITE)
     screen.blit(reward_text, (10, 10))
 
     pygame.display.flip()
@@ -126,9 +149,8 @@ while running and episode < total_test_episodes:
             total_rewards += reward
 
             draw_grid(state, steps, total_rewards, episode)
-            time.sleep(0.5)  # Delay to make the game viewable
+            time.sleep(0.36)  # Delay to make the game viewable
 
     episode += 1
 
 pygame.quit()
-print("Score over time: " + str(sum(rewards) / total_test_episodes))
