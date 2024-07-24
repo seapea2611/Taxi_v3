@@ -42,7 +42,7 @@ class CustomTaxiEnv(gym.Env):
         elif action == 1:  # North
             self.taxi_row = max(self.taxi_row - 1, 0)
         elif action == 2:  # East
-            self.taxi_col = min(self.taxi_col + 1, self.grid_size - 1)
+            self.taxi_col = min(self.taxi_col + 1, self.grid_size - 1)                                                                                                                                                                                                                                                                                                                                                                     
         elif action == 3:  # West
             self.taxi_col = max(self.taxi_col - 1, 0)
         elif action == 4:  # Pickup
